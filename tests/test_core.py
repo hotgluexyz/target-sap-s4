@@ -131,6 +131,23 @@ def test_simulation_signed_amounts_xml_references_and_no_remote_id(tmp_path, mon
     assert sent[0][2]["verify"] is True
 
 
+def test_profitability_assignment_is_preserved_on_its_own_line(tmp_path, monkeypatch):
+    record = copy.deepcopy(RECORD)
+    record["items"][1].update(account_assignment_type="EO", profit_center="TESTPC01")
+    record["items"][2]["cost_center"] = "TESTCC02"
+    state, sent = run_cli(tmp_path, monkeypatch, [record])
+    assert state["bookmarks"]["journal_entries"][0]["success"] is True
+    items = ET.fromstring(sent[0][2]["data"]).findall(".//JournalEntry/Item")
+    assert items[0].find("AccountAssignment") is None
+    assert [(e.tag, e.text) for e in items[1].find("AccountAssignment")] == [
+        ("AccountAssignmentType", "EO"),
+        ("ProfitCenter", "TESTPC01"),
+    ]
+    assert [(e.tag, e.text) for e in items[2].find("AccountAssignment")] == [
+        ("CostCenter", "TESTCC02"),
+    ]
+
+
 @pytest.mark.parametrize(
     "defect", ["unbalanced", "wrong_sign", "long_account", "mixed_currency", "invalid_date"]
 )

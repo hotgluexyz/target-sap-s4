@@ -59,7 +59,12 @@ These example accounts are not business mapping defaults. Accounts and company
 are tenant decisions. Amounts are signed decimal **strings**, debit `S` positive
 and credit `H` negative. Items must balance exactly in one transaction currency.
 Dates must be real ISO dates. Optional item fields: `reference_document_item`,
-`cost_center`, `profit_center`. Long account/text/reference fields fail, never
+`cost_center`, `profit_center`, and `account_assignment_type` (only `EO`, for a
+profitability segment). `EO` is serialized as `AccountAssignmentType` before
+`ProfitCenter` and `CostCenter`. Supply tenant-approved assignments: cost centers
+alone may not satisfy revenue/sales-deduction accounts. Simulation validates the
+specific account, assignment and posting date; an existing profit center does not
+establish the correct business allocation. Long account/text/reference fields fail, never
 truncate. This initial target handles normal G/L journals, not customer payments,
 AR clearing, tax calculation, negative posting, updates, or formal reversals.
 

@@ -28,6 +28,7 @@ ITEM_SCHEMA = {
         "item_text": {"type": "string", "maxLength": 50},
         "assignment_reference": {"type": "string", "maxLength": 18},
         "reference_document_item": {"type": "string", "pattern": "^[0-9]{1,6}$"},
+        "account_assignment_type": {"enum": ["EO"]},
         "profit_center": {"type": "string", "maxLength": 10},
         "cost_center": {"type": "string", "maxLength": 10},
     },
@@ -128,9 +129,12 @@ class JournalEntriesSink(SapS4RecordSink):
             ):
                 if field in line:
                     text(item, key, line[field])
-            if line.get("profit_center") or line.get("cost_center"):
+            if any(
+                line.get(k) for k in ("account_assignment_type", "profit_center", "cost_center")
+            ):
                 assignment = ET.SubElement(item, "AccountAssignment")
                 for key, field in (
+                    ("AccountAssignmentType", "account_assignment_type"),
                     ("ProfitCenter", "profit_center"),
                     ("CostCenter", "cost_center"),
                 ):
